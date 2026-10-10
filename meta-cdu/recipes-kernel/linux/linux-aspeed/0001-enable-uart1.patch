@@ -1,0 +1,23 @@
+From: Mickian <kaii7368616f@foxmail.com>
+Data: Mon, 3 Jun 2024 15:30:00 +0800
+Subject: [PATCH] enable uart1
+
+Upstream-Status: Inappropriate
+Reason: This patch is for enabling UART1 on the AST2600 evaluation board. It modifies the device tree source file to set the status of UART1 to "okay", allowing it to be used by the system.
+Signed-off-by: Mickian <kaii7368616f@foxmail.com>
+
+Index: kernel-source/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
+===================================================================
+--- kernel-source.orig/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
++++ kernel-source/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
+@@ -208,6 +208,10 @@
+ 	/delete-property/ no-loopback-test;
+ };
+ 
++&uart1 {
++	status = "okay";
++};
++
+ &i2c0 {
+ 	status = "okay";
+ };

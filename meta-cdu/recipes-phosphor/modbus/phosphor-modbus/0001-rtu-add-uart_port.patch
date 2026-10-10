@@ -1,0 +1,217 @@
+From 10289948de2acc5e494b4e7203fe844cadfbbc75 Mon Sep 17 00:00:00 2001
+From: PirsLee <kaii7368616f@foxmail.com>
+Date: Sun, 20 Sep 2026 10:40:42 +0800
+Subject: [PATCH] rtu: add uart_port
+Upstream-Status: Inappropriate
+---
+ rtu/meson.build           |  2 +-
+ rtu/port/port_factory.cpp | 18 ++++++++-
+ rtu/port/port_factory.hpp |  1 +
+ rtu/port/uart_port.cpp    | 83 +++++++++++++++++++++++++++++++++++++++
+ rtu/port/uart_port.hpp    | 26 ++++++++++++
+ 5 files changed, 128 insertions(+), 2 deletions(-)
+ create mode 100644 rtu/port/uart_port.cpp
+ create mode 100644 rtu/port/uart_port.hpp
+
+diff --git a/rtu/meson.build b/rtu/meson.build
+index 8613815..aec7636 100644
+--- a/rtu/meson.build
++++ b/rtu/meson.build
+@@ -39,7 +39,7 @@ modbus_rtu_lib = static_library(
+ 
+ modbus_rtu_port_lib = static_library(
+     'modbus_rtu_port_lib',
+-    ['port/base_port.cpp', 'port/port_factory.cpp', 'port/usb_port.cpp'],
++    ['port/base_port.cpp', 'port/port_factory.cpp', 'port/usb_port.cpp', 'port/uart_port.cpp'],
+     include_directories: ['.', common_include],
+     link_with: [modbus_rtu_lib, modbus_common_lib],
+     dependencies: [default_deps],
+diff --git a/rtu/port/port_factory.cpp b/rtu/port/port_factory.cpp
+index 467d18f..4ec3df8 100644
+--- a/rtu/port/port_factory.cpp
++++ b/rtu/port/port_factory.cpp
+@@ -1,8 +1,10 @@
+ #include "port_factory.hpp"
+ 
+ #include "usb_port.hpp"
++#include "uart_port.hpp"
+ 
+ #include <xyz/openbmc_project/Configuration/USBPort/client.hpp>
++#include <xyz/openbmc_project/Configuration/UARTPort/client.hpp>
+ 
+ namespace phosphor::modbus::rtu::port
+ {
+@@ -10,9 +12,13 @@ namespace phosphor::modbus::rtu::port
+ using USBPortConfigIntf =
+     sdbusplus::client::xyz::openbmc_project::configuration::USBPort<>;
+ 
++using UARTPortConfigIntf =
++    sdbusplus::client::xyz::openbmc_project::configuration::UARTPort<>;
++
+ auto PortFactory::getInterfaces() -> std::vector<std::string>
+ {
+-    return {USBPortConfigIntf::interface};
++    return {USBPortConfigIntf::interface,
++            UARTPortConfigIntf::interface};
+ }
+ 
+ auto PortFactory::getConfig(sdbusplus::async::context& ctx,
+@@ -25,6 +31,11 @@ auto PortFactory::getConfig(sdbusplus::async::context& ctx,
+         co_return co_await USBPort::getConfig(ctx, objectPath);
+     }
+ 
++    if (interfaceName == UARTPortConfigIntf::interface)
++    {
++        co_return co_await UARTPort::getConfig(ctx, objectPath);
++    }
++
+     co_return std::nullptr_t();
+ }
+ 
+@@ -37,6 +48,11 @@ auto PortFactory::create(sdbusplus::async::context& ctx,
+         return std::make_unique<USBPort>(ctx, config);
+     }
+ 
++    if (config.portType == config::PortType::uart)
++    {
++        return std::make_unique<UARTPort>(ctx, config);
++    }
++
+     return nullptr;
+ }
+ 
+diff --git a/rtu/port/port_factory.hpp b/rtu/port/port_factory.hpp
+index a663e4a..7f13472 100644
+--- a/rtu/port/port_factory.hpp
++++ b/rtu/port/port_factory.hpp
+@@ -16,6 +16,7 @@ namespace config
+ enum class PortType
+ {
+     usb,
++    uart,
+     unknown
+ };
+ 
+diff --git a/rtu/port/uart_port.cpp b/rtu/port/uart_port.cpp
+new file mode 100644
+index 0000000..0b863c8
+--- /dev/null
++++ b/rtu/port/uart_port.cpp
+@@ -0,0 +1,83 @@
++#include "uart_port.hpp"
++
++#include "common/entity_manager_interface.hpp"
++#include "port_factory.hpp"
++
++#include <fcntl.h>
++
++#include <phosphor-logging/lg2.hpp>
++#include <xyz/openbmc_project/Configuration/UARTPort/client.hpp>
++
++#include <filesystem>
++#include <format>
++#include <optional>
++
++namespace phosphor::modbus::rtu::port
++{
++PHOSPHOR_LOG2_USING;
++
++using UARTPortConfigIntf =
++    sdbusplus::client::xyz::openbmc_project::configuration::UARTPort<>;
++
++namespace config
++{
++    struct UARTPortConfig : public PortFactoryConfig
++    {
++        std::string address = "unknown";
++
++        virtual ~UARTPortConfig() = default;
++    };
++} // namespace config
++
++static auto getDevicePath(const config::PortFactoryConfig& inConfig)
++    -> std::string
++{
++    namespace fs = std::filesystem;
++    auto config = static_cast<const config::UARTPortConfig&>(inConfig);
++
++    std::string ttyPath = std::format("/dev/{}", config.address);
++
++    if (!fs::exists(ttyPath))
++    {
++        throw std::runtime_error(
++            std::format("/dev/{} does not exist", config.address));
++    }
++
++    return ttyPath;
++}
++
++UARTPort::UARTPort(sdbusplus::async::context& ctx,
++                     const config::PortFactoryConfig& config) :
++    BasePort(ctx, config, getDevicePath(config))
++{
++    info("UART port {NAME} created successfully", "NAME", config.name);
++}
++
++auto UARTPort::getConfig(sdbusplus::async::context& ctx,
++                          const sdbusplus::object_path& objectPath)
++    -> sdbusplus::async::task<std::unique_ptr<config::PortFactoryConfig>>
++{
++    auto config = std::make_unique<config::UARTPortConfig>();
++    if(!config)
++    {
++        co_return std::nullptr_t();
++    }
++    auto properties = 
++        co_await UARTPortConfigIntf(ctx)
++            .service(entity_manager::EntityManagerInterface::serviceName)
++            .path(objectPath.str)
++            .properties();
++
++    auto res = updateBaseConfig(*config, properties);
++    if(!res)
++    {
++        co_return std::nullptr_t();
++    }
++
++    config->portType = config::PortType::uart;
++    config->address = properties.device_address;
++
++    co_return config;
++}
++
++} // namespace phosphor::modbus::rtu::port
+\ No newline at end of file
+diff --git a/rtu/port/uart_port.hpp b/rtu/port/uart_port.hpp
+new file mode 100644
+index 0000000..4444401
+--- /dev/null
++++ b/rtu/port/uart_port.hpp
+@@ -0,0 +1,26 @@
++#pragma once
++
++#include "base_port.hpp"
++
++#include <sdbusplus/async.hpp>
++
++namespace phosphor::modbus::rtu::port
++{
++
++namespace config
++{
++    struct PortFactoryConfig;
++} // namespace config
++
++class UARTPort : public BasePort
++{
++    public:
++    explicit UARTPort(sdbusplus::async::context& ctx,
++                     const config::PortFactoryConfig& config);
++
++    static auto getConfig(sdbusplus::async::context& ctx,
++                          const sdbusplus::object_path& objectPath)
++        -> sdbusplus::async::task<std::unique_ptr<config::PortFactoryConfig>>;
++};
++
++} // namespace phosphor::modbus::rtu::port
+\ No newline at end of file

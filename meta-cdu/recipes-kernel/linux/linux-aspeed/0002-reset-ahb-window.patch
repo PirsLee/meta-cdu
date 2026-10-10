@@ -1,0 +1,30 @@
+From: Mickian <kaii7368616f@foxmail.com>
+Data: Mon, 3 Jun 2024 15:30:00 +0800
+Subject: [PATCH] reset AHB window
+
+Upstream-Status: Inappropriate
+Reason: This patch is for setting AHB-Window to adjust the 64MB Flash allowing it to be used by the system.
+Signed-off-by: Mickian <kaii7368616f@foxmail.com>
+
+Index: kernel-source/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+===================================================================
+--- kernel-source.orig/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ kernel-source/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -103,7 +103,7 @@
+ 		};
+ 
+ 		fmc: spi@1e620000 {
+-			reg = <0x1e620000 0xc4>, <0x20000000 0x10000000>;
++			reg = <0x1e620000 0xc4>, <0x20000000 0x04000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2600-fmc";
+@@ -134,7 +134,7 @@
+ 		};
+ 
+ 		spi1: spi@1e630000 {
+-			reg = <0x1e630000 0xc4>, <0x30000000 0x10000000>;
++			reg = <0x1e630000 0xc4>, <0x30000000 0x04000000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "aspeed,ast2600-spi";

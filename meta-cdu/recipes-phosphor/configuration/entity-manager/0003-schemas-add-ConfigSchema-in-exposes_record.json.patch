@@ -1,0 +1,23 @@
+From 2a77be7f0c298596af47c2a393f44ebb10041a8a Mon Sep 17 00:00:00 2001
+From: PirsLee <kaii7368616f@foxmail.com>
+Date: Fri, 18 Sep 2026 13:57:41 +0800
+Subject: [PATCH] schemas: add ConfigSchema in exposes_record.json
+Upstream-Status: Inappropriate
+---
+ schemas/exposes_record.json | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/schemas/exposes_record.json b/schemas/exposes_record.json
+index 5edaeb5..7665362 100644
+--- a/schemas/exposes_record.json
++++ b/schemas/exposes_record.json
+@@ -182,6 +182,9 @@
+                 },
+                 {
+                     "$ref": "modbus.json#/$defs/ModbusRTUDevice"
++                },
++                {
++                    "$ref": "uart_port.json#/$defs/UARTPort"
+                 }
+             ]
+         },

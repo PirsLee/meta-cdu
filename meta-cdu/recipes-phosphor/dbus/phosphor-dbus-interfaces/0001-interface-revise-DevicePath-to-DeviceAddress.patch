@@ -1,0 +1,53 @@
+From 06e84e701c94da14825bbdccec6b57ea8ab00221 Mon Sep 17 00:00:00 2001
+From: PirsLee <kaii7368616f@foxmail.com>
+Date: Sun, 20 Sep 2026 11:09:10 +0800
+Subject: [PATCH] interface: revise DevicePath to DeviceAddress
+Upstream-Status: Inappropriate
+---
+ .../Configuration/UARTPort.interface.yaml     | 26 +------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
+
+diff --git a/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml b/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+index 3d393f9..ac5fbc1 100644
+--- a/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
++++ b/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+@@ -14,7 +14,7 @@ properties:
+           The name of the uart port.
+       flags:
+           - readonly
+-    - name: DevicePath
++    - name: DeviceAddress
+       type: string
+       description: >
+           The path of the UART, e.g. /dev/ttyS0 or /dev/ttyAMA0.
+@@ -32,30 +32,6 @@ properties:
+           The baudrate of the communication channel.
+       flags:
+           - readonly
+-    - name: Parity
+-      type: string
+-      description: >
+-          The parity of the communication channel, for example, none, even, odd.
+-      flags:
+-          - readonly
+-    - name: DataBits
+-      type: uint64
+-      description: >
+-          The number of data bits of the communication channel.
+-      flags:
+-          - readonly
+-    - name: StopBits
+-      type: uint64
+-      description: >
+-          The number of stop bits of the communication channel.
+-      flags:
+-          - readonly
+-    - name: FlowControl
+-      type: string
+-      description: >
+-          The flow control of the communication channel, for example, none, rts/cts, xon/xoff.
+-      flags:
+-          - readonly
+     - name: RTSDelay
+       type: uint64
+       description: >

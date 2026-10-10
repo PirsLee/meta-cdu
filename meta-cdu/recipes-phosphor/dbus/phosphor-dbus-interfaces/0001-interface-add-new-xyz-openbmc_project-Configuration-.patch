@@ -1,0 +1,174 @@
+From c678a6e7f15ab6fc2e20542ae756dc450b545f54 Mon Sep 17 00:00:00 2001
+From: PirsLee <kaii7368616f@foxmail.com>
+Date: Fri, 18 Sep 2026 10:25:30 +0800
+Subject: [PATCH] interface: add new
+ xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+Upstream-Status: Inappropriate
+---
+ .../Configuration/UARTPort/meson.build        | 40 ++++++++++++
+ .../openbmc_project/Configuration/meson.build | 25 ++++++++
+ .../Configuration/UARTPort.interface.yaml     | 64 +++++++++++++++++++
+ 3 files changed, 129 insertions(+)
+ create mode 100644 gen/xyz/openbmc_project/Configuration/UARTPort/meson.build
+ create mode 100644 yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+
+diff --git a/gen/xyz/openbmc_project/Configuration/UARTPort/meson.build b/gen/xyz/openbmc_project/Configuration/UARTPort/meson.build
+new file mode 100644
+index 0000000..fec6b28
+--- /dev/null
++++ b/gen/xyz/openbmc_project/Configuration/UARTPort/meson.build
+@@ -0,0 +1,40 @@
++# Generated file; do not modify.
++
++sdbusplus_current_path = 'xyz/openbmc_project/Configuration/UARTPort'
++
++generated_sources += custom_target(
++    'xyz/openbmc_project/Configuration/UARTPort__cpp'.underscorify(),
++    input: [
++        '../../../../../yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml',
++    ],
++    output: [
++        'common.hpp',
++        'server.hpp',
++        'server.cpp',
++        'aserver.hpp',
++        'client.hpp',
++    ],
++    depend_files: sdbusplusplus_depfiles,
++    command: [
++        sdbuspp_gen_meson_prog,
++        '--command',
++        'cpp',
++        '--output',
++        meson.current_build_dir(),
++        '--tool',
++        sdbusplusplus_prog,
++        '--directory',
++        meson.current_source_dir() / '../../../../../yaml',
++        'xyz/openbmc_project/Configuration/UARTPort',
++    ],
++    install: should_generate_cpp,
++    install_dir: [
++        get_option('includedir') / sdbusplus_current_path,
++        get_option('includedir') / sdbusplus_current_path,
++        false,
++        get_option('includedir') / sdbusplus_current_path,
++        get_option('includedir') / sdbusplus_current_path,
++    ],
++    build_by_default: should_generate_cpp,
++)
++
+diff --git a/gen/xyz/openbmc_project/Configuration/meson.build b/gen/xyz/openbmc_project/Configuration/meson.build
+index 409ba98..05c32c6 100644
+--- a/gen/xyz/openbmc_project/Configuration/meson.build
++++ b/gen/xyz/openbmc_project/Configuration/meson.build
+@@ -4,6 +4,7 @@ subdir('GPIOLeakDetector')
+ subdir('GPIOValve')
+ subdir('ModbusRTUDetect')
+ subdir('SpdmTcpResponder')
++subdir('UARTPort')
+ subdir('USBPort')
+ 
+ sdbusplus_current_path = 'xyz/openbmc_project/Configuration'
+@@ -128,6 +129,30 @@ generated_markdown += custom_target(
+     build_by_default: should_generate_markdown,
+ )
+ 
++generated_markdown += custom_target(
++    'xyz/openbmc_project/Configuration/UARTPort__markdown'.underscorify(),
++    input: [
++        '../../../../yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml',
++    ],
++    output: ['UARTPort.md'],
++    depend_files: sdbusplusplus_depfiles,
++    command: [
++        sdbuspp_gen_meson_prog,
++        '--command',
++        'markdown',
++        '--output',
++        meson.current_build_dir(),
++        '--tool',
++        sdbusplusplus_prog,
++        '--directory',
++        meson.current_source_dir() / '../../../../yaml',
++        'xyz/openbmc_project/Configuration/UARTPort',
++    ],
++    install: should_generate_markdown,
++    install_dir: [inst_markdown_dir / sdbusplus_current_path],
++    build_by_default: should_generate_markdown,
++)
++
+ generated_markdown += custom_target(
+     'xyz/openbmc_project/Configuration/USBPort__markdown'.underscorify(),
+     input: [
+diff --git a/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml b/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+new file mode 100644
+index 0000000..3d393f9
+--- /dev/null
++++ b/yaml/xyz/openbmc_project/Configuration/UARTPort.interface.yaml
+@@ -0,0 +1,64 @@
++Description: >
++    Implement to provide entity manager configuration for the uart port.
++
++properties:
++    - name: Type
++      type: string
++      description: >
++          The type of configuration object.
++      flags:
++          - readonly
++    - name: Name
++      type: string
++      description: >
++          The name of the uart port.
++      flags:
++          - readonly
++    - name: DevicePath
++      type: string
++      description: >
++          The path of the UART, e.g. /dev/ttyS0 or /dev/ttyAMA0.
++      flags:
++          - readonly
++    - name: Mode
++      type: string
++      description: >
++          The mode of the serial interface, for example, RS232, RS485.
++      flags:
++          - readonly
++    - name: BaudRate
++      type: uint64
++      description: >
++          The baudrate of the communication channel.
++      flags:
++          - readonly
++    - name: Parity
++      type: string
++      description: >
++          The parity of the communication channel, for example, none, even, odd.
++      flags:
++          - readonly
++    - name: DataBits
++      type: uint64
++      description: >
++          The number of data bits of the communication channel.
++      flags:
++          - readonly
++    - name: StopBits
++      type: uint64
++      description: >
++          The number of stop bits of the communication channel.
++      flags:
++          - readonly
++    - name: FlowControl
++      type: string
++      description: >
++          The flow control of the communication channel, for example, none, rts/cts, xon/xoff.
++      flags:
++          - readonly
++    - name: RTSDelay
++      type: uint64
++      description: >
++          The request to send delay in milli-seconds.
++      flags:
++          - readonly
+\ No newline at end of file

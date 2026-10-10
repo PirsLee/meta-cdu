@@ -1,0 +1,79 @@
+From b6d028d0bfcf94ce6187a73df47f0fe5e9b0d895 Mon Sep 17 00:00:00 2001
+From: PirsLee <kaii7368616f@foxmail.com>
+Date: Fri, 18 Sep 2026 13:38:03 +0800
+Subject: [PATCH] schemas: add entity-manager/*/schemas/uart_port.json
+Upstream-Status: Inappropriate
+---
+ schemas/uart_port.json | 63 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+ create mode 100644 schemas/uart_port.json
+
+diff --git a/schemas/uart_port.json b/schemas/uart_port.json
+new file mode 100644
+index 0000000..3d067ee
+--- /dev/null
++++ b/schemas/uart_port.json
+@@ -0,0 +1,63 @@
++{
++    "$schema": "http://json-schema.org/draft-07/schema#",
++    "$defs": {
++        "UARTPort": {
++            "description": "The definition of the UART port.",
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++                "Type": {
++                    "description": "The type of configuration object.",
++                    "const": "UARTPort"
++                },
++                "Name": {
++                    "description": "The name of the UART port.",
++                    "type": "string"
++                },
++                "DevicePath": {
++                    "description": "The path to the UART device.",
++                    "type": "string"
++                },
++                "Mode": {
++                    "enum": ["RS232", "RS485"]
++                },
++                "BaudRate": {
++                    "description": "The baudrate of the communication channel.",
++                    "enum": [9600, 19200, 57600, 115200]
++                },
++                "Parity": {
++                    "description": "The parity of the communication channel.",
++                    "enum": ["None", "Even", "Odd"]
++                },
++                "DataBits": {
++                    "description": "The number of data bits in the communication channel.",
++                    "enum": [5, 6, 7, 8]
++                },
++                "StopBits": {
++                    "description": "The number of stop bits in the communication channel.",
++                    "enum": [1, 2]
++                },
++                "FlowControl": {
++                    "description": "The flow control of the communication channel.",
++                    "enum": ["None", "RTS/CTS", "XON/XOFF"]
++                },
++                "RTSDelay": {
++                    "description": "The request to send delay in milli-seconds.",
++                    "type": "number"
++                }
++            },
++            "required": [
++                "Name",
++                "Type",
++                "DevicePath",
++                "Mode",
++                "BaudRate",
++                "Parity",
++                "DataBits",
++                "StopBits",
++                "FlowControl",
++                "RTSDelay"
++            ]
++        }
++    }
++}
